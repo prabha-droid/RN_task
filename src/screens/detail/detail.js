@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import navigationService from '../../root/navigationService';
 import SwiperFlatList from 'react-native-swiper-flatlist';
 import { addProduct } from '../../store/shopping/productSice';
@@ -10,6 +10,14 @@ const Detail = ({ route }) => {
   const dispatch = useDispatch()
   const productDetail = route.params.productDetail;
   const [itemSelected, setItemSelected] = useState(productDetail?.selectedQuantity ? true : false)
+const [productDetails,setProductDetails] = useState('')
+  useEffect(() => {
+  if(productDetail?.id){  fetch(`https://dummyjson.com/products/${productDetail?.id}`, {
+        method: 'GET',
+    })
+        .then(res => res.json())
+        .then(json => setProductDetails(json))}
+}, [productDetail])
 
   return (
     <>
@@ -19,11 +27,12 @@ const Detail = ({ route }) => {
         rightOnPress={() => navigationService.navigate('Cart')}
       />
       <View style={styles.container}>
-        <Text style={styles.productName}>{productDetail.title}</Text>
+        <ScrollView>
+        <Text style={styles.productName}>{productDetails?.title}</Text>
         <View style={styles.carouselView}>
           <SwiperFlatList
             showPagination
-            data={productDetail.images}
+            data={productDetails?.images}
             paginationActiveColor='#F9B023'
             paginationDefaultColor='#E7ECF0'
             paginationStyleItem={styles.carouselPaginationItem}
@@ -34,15 +43,15 @@ const Detail = ({ route }) => {
           />
         </View>
         <View style={styles.priceSection}>
-          <Text style={styles.priceText}>$ {productDetail.price}</Text>
+          <Text style={styles.priceText}>$ {productDetails?.price}</Text>
           <View style={styles.discountView}>
-            <Text style={{ color: '#fff' }}>{productDetail.discountPercentage} % OFF</Text>
+            <Text style={{ color: '#fff' }}>{productDetails?.discountPercentage} % OFF</Text>
           </View>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <TouchableOpacity disabled={itemSelected}
             onPress={() => {
-              dispatch(addProduct(productDetail?.id));
+              dispatch(addProduct(productDetails?.id));
               setItemSelected(true)
             }}
             style={[styles.addToCartButton, { opacity: itemSelected ? 0.5 : 1,}]}>
@@ -54,9 +63,9 @@ const Detail = ({ route }) => {
         </View>
         <View style={{ marginTop: 20 }}>
           <Text style={styles.detailHeading}>Details</Text>
-          <Text style={styles.descriptionText}>{productDetail.description}</Text>
+          <Text style={styles.descriptionText}>{productDetails?.description}</Text>
         </View>
-
+        </ScrollView>
       </View>
     </>
   )
